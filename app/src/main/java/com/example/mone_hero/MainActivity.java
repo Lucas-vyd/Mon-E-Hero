@@ -1,6 +1,6 @@
 package com.example.mone_hero;
 
-import androidx.appcompat.app.AppCompatActivity; // Utilisez ceci pour AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -15,14 +15,19 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         Button buttonConnect = findViewById(R.id.buttonConnect);
+        final EditText editText = findViewById(R.id.editText); // Référence à votre EditText
 
         buttonConnect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Cette méthode sera appelée lorsque le bouton "Se connecter" sera cliqué.
-                Log.d("MainActivity", "Click réussi"); // Affiche "click réussi" dans la console.
+                String inputText = editText.getText().toString().trim(); // Obtenez et nettoyez le texte
+
+                if (inputText.isEmpty()) { // Vérifiez si le texte est vide
+                    Log.d("MainActivity", "texte vide");
+                } else {
+                    Log.d("MainActivity", inputText); // Affiche le texte dans la console
+                }
             }
         });
     }
 }
-
