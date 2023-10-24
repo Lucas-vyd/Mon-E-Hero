@@ -38,16 +38,25 @@ public class MainActivity extends AppCompatActivity {
         // Afficher l'ID généré dans le TextView
         textView.setText("ID: "+uniqueIdString);
 
+        App1WebSocketManager webSocketManager = new App1WebSocketManager();
 
         buttonConnect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+/*
                 String inputText = editText.getText().toString().trim(); // Obtenez et nettoyez le texte
 
                 if (inputText.isEmpty()) { // Vérifiez si le texte est vide
                     Log.d("MainActivity", "texte vide");
                 } else {
                     Log.d("MainActivity", inputText); // Affiche le texte dans la console
+                }
+ */
+                webSocketManager.connectToServer();
+                //String message = editText.getText().toString().trim(); // Obtenez et nettoyez le texte
+                String message = "Serveur PHP Mon E-Hero";
+                if (!message.isEmpty()) {
+                    webSocketManager.sendMessage(message);
                 }
             }
         });
