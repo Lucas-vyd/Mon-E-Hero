@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "876770225256",
+    "project_id": "mon-e-hero",
+    "storage_bucket": "mon-e-hero.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:876770225256:android:5bd97b09de29d900551fdd",
+        "android_client_info": {
+          "package_name": "com.example.mone_hero_contact"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDuotDLwTpvr3zBl42Lwrv_JYisVFTAb1Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
