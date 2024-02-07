@@ -2,12 +2,8 @@ package com.example.mone_hero;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.annotation.SuppressLint;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -17,7 +13,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -53,53 +48,22 @@ public class MainActivity extends AppCompatActivity {
         buttonConnect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Capture de l'écran (vous devez implémenter cette méthode selon vos besoins)
-                Bitmap screenshot = captureScreen();
+                // Récupérer les données d'écran (exemple : texte d'un TextView)
+                String screenData = textView.getText().toString();
 
-                // Envoyer la capture d'écran au serveur
-                new SendScreenDataTask().execute(screenshot);
+                // Envoyer les données d'écran au serveur PHP
+                new SendScreenDataTask().execute(screenData);
             }
         });
     }
-    private Bitmap captureScreen() {
-        // Obtenir la référence à la vue racine de l'activité
-        View rootView = getWindow().getDecorView().getRootView();
-
-        // Créer un Bitmap avec les dimensions de la vue racine
-        Bitmap screenshot = Bitmap.createBitmap(rootView.getWidth(), rootView.getHeight(), Bitmap.Config.ARGB_8888);
-
-        // Créer un canvas associé au Bitmap
-        Canvas canvas = new Canvas(screenshot);
-
-        // Dessiner la vue racine sur le canvas
-        rootView.draw(canvas);
-
-        return screenshot;
-    }
-
-    private class SendScreenDataTask extends AsyncTask<Bitmap, Void, Void> {
-        @SuppressLint("WrongThread")
-        @Override
-        protected Void doInBackground(Bitmap... bitmaps) {
-            // Convertir l'image en chaîne Base64
-            Bitmap screenshot = bitmaps[0];
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            screenshot.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
-            byte[] byteArray = byteArrayOutputStream.toByteArray();
-            String encodedImage = Base64.encodeToString(byteArray, Base64.DEFAULT);
-
-            // Envoyer l'image encodée au serveur PHP
-            new SendImageDataTask().execute(encodedImage);
-
-            return null;
-        }
-    }
-
-    private class SendImageDataTask extends AsyncTask<String, Void, Void> {
+    private class SendScreenDataTask extends AsyncTask<String, Void, Void> {
         @Override
         protected Void doInBackground(String... params) {
-            // Envoyer l'image encodée au serveur PHP
-            String encodedImage = params[0];
+            // Envoyer les données d'écran au serveur PHP
+            String screenData = params[0];
+            Log.d("MainActivity", "screenData: " + screenData);
+            // Utiliser une requête HTTP pour envoyer les données au serveur PHP
+            // Exemple : Utilisation de HttpURLConnection
             // Assurez-vous d'ajuster l'URL du serveur PHP
             String serverUrl = "http://407.projet3il.fr/index.php";
             try {
@@ -107,18 +71,15 @@ public class MainActivity extends AppCompatActivity {
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                 connection.setRequestMethod("POST");
                 connection.setDoOutput(true);
-
-                // Envoyer l'image encodée dans le corps de la requête
                 OutputStream outputStream = connection.getOutputStream();
-                outputStream.write(encodedImage.getBytes());
+                outputStream.write(("data=" + screenData).getBytes("UTF-8"));
                 outputStream.flush();
                 outputStream.close();
 
-                connection.getResponseCode(); // Important pour déclencher la requête
+                int responseCode = connection.getResponseCode();
                 connection.disconnect();
-
             } catch (Exception e) {
-                Log.e("SendImageDataTask", "Erreur lors de l'envoi de l'image au serveur", e);
+                Log.e("SendScreenDataTask", "Erreur lors de l'envoi des données d'écran", e);
             }
             return null;
         }

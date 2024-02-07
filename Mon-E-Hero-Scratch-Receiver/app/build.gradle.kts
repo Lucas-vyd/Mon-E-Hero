@@ -38,5 +38,6 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     implementation("com.squareup.okhttp3:okhttp:4.9.1")
     //implementation("com.squareup.oskio:okio:2.10.0")
+    implementation ("com.squareup.okio:okio:2.10.0")
     implementation("org.java-websocket:Java-WebSocket:1.5.1")
 }

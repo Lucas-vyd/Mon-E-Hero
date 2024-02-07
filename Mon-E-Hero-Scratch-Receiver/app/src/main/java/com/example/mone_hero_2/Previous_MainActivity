@@ -5,8 +5,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -14,10 +12,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.ImageView;
 
 import java.io.BufferedReader;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -25,18 +21,11 @@ import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
 
-    private ImageView imageViewReceived;
-    private String imageUrl;
-
-
     TextView textViewReceivedData;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        imageViewReceived = findViewById(R.id.imageViewReceived);
-        imageUrl = "http://407.projet3il.fr/index.php";
 
         Button buttonConnect = findViewById(R.id.buttonConnect);
         final EditText editText = findViewById(R.id.editText); // Référence à votre EditText
@@ -87,43 +76,55 @@ public class MainActivity extends AppCompatActivity {
                 }
                  */
                 //String message = editText.getText().toString().trim(); // Obtenez et nettoyez le texte
-                //new GetScreenDataTask().execute();
-                new DownloadImageTask().execute();
+                new GetScreenDataTask().execute();
             }
         });
     }
-    private class DownloadImageTask extends AsyncTask<Void, Void, Bitmap> {
+    private class GetScreenDataTask extends AsyncTask<Void, Void, String> {
         @Override
-        protected Bitmap doInBackground(Void... params) {
-            //String imageUrl = params[0];
-            // Remplacez l'URL par l'adresse réelle de votre serveur PHP
+        protected String doInBackground(Void... params) {
+            // Récupérer les données d'écran depuis le serveur PHP
+            // Utiliser une requête HTTP pour récupérer les données
+            // Exemple : Utilisation de HttpURLConnection
+            // Assurez-vous d'ajuster l'URL du serveur PHP
             String serverUrl = "http://407.projet3il.fr/index.php";
-            String imageUrl = "http://407.projet3il.fr/capture.png";
-
-
             try {
-                // Télécharger l'image depuis l'URL
-                InputStream in = new java.net.URL(imageUrl).openStream();
+                URL url = new URL(serverUrl);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("GET");
+                BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                StringBuilder response = new StringBuilder();
+                String line;
 
-                Bitmap bitmap = BitmapFactory.decodeStream(in);
-                //in.close();
-                // Convertir l'InputStream en Bitmap
-                Log.d("DownloadImageTask", "Téléchargement de l'image");
-                return bitmap;
+                while ((line = reader.readLine()) != null) {
+                    response.append(line);
+                }
+
+                reader.close();
+                connection.disconnect();
+
+                return response.toString();
             } catch (Exception e) {
-                Log.e("DownloadImageTask", "Erreur lors du téléchargement de l'image", e);
+                Log.e("GetScreenDataTask", "Erreur lors de la récupération des données d'écran", e);
                 return null;
             }
         }
 
         @Override
-        protected void onPostExecute(Bitmap result) {
-            // Afficher l'image dans l'ImageView
-            if (result != null) {
-                imageViewReceived.setImageBitmap(result);
+        protected void onPostExecute(String result) {
+            // Assurez-vous que textViewReceivedData est non nulle avant de l'utiliser
+            if (textViewReceivedData != null) {
+                if (result != null) {
+                    textViewReceivedData.setText("Données reçues : " + result);
+                    // Afficher la réponse ou effectuer d'autres actions
+                    Log.d("GetScreenDataTask", "Données d'écran reçues : " + result);
+                } else {
+                    // Gérer l'erreur de récupération des données d'écran
+                    Log.e("GetScreenDataTask", "Erreur lors de la récupération des données d'écran");
+                }
             } else {
-                // Gérer l'erreur du téléchargement de l'image
-                Log.e("DownloadImageTask", "Erreur lors du téléchargement de l'image 2");
+                // Gérer le cas où textViewReceivedData est null
+                Log.e("GetScreenDataTask", "textViewReceivedData est null");
             }
         }
     }
