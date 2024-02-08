@@ -1,126 +1,92 @@
 package com.example.mone_hero;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.annotation.SuppressLint;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Base64;
-import android.util.Log;
 import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
-import android.content.Context;
-import android.content.SharedPreferences;
+import androidx.appcompat.app.AppCompatActivity;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.io.DataOutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.UUID;
-
-
+import java.nio.charset.StandardCharsets;
 
 public class MainActivity extends AppCompatActivity {
 
-    @Override
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Button buttonConnect = findViewById(R.id.buttonConnect);
-        final EditText editText = findViewById(R.id.editText); // Référence à votre EditText
-
-        TextView textView = findViewById(R.id.textViewId); // Pour afficher l'id de l'appli
-
-        // Générer un identifiant unique (UUID)
-        UUID uniqueId = UUID.randomUUID();
-        String uniqueIdString = uniqueId.toString();
-
-        // Stocker l'identifiant dans les préférences partagées
-        SharedPreferences preferences = getSharedPreferences("MonAppPrefs", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putString("app_id", uniqueIdString);
-        editor.apply();
-
-        // Afficher l'ID généré dans le TextView
-        textView.setText("ID: " + uniqueIdString);
-        buttonConnect.setOnClickListener(new View.OnClickListener() {
+        // Vous pouvez appeler la tâche asynchrone lorsqu'un événement se produit, par exemple lorsqu'un bouton est cliqué
+        findViewById(R.id.buttonCaptureGeste).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Capture de l'écran (vous devez implémenter cette méthode selon vos besoins)
-                Bitmap screenshot = captureScreen();
-
-                // Envoyer la capture d'écran au serveur
-                new SendScreenDataTask().execute(screenshot);
+                new SendGestureTask().execute();
             }
         });
     }
-    private Bitmap captureScreen() {
-        // Obtenir la référence à la vue racine de l'activité
-        View rootView = getWindow().getDecorView().getRootView();
 
-        // Créer un Bitmap avec les dimensions de la vue racine
-        Bitmap screenshot = Bitmap.createBitmap(rootView.getWidth(), rootView.getHeight(), Bitmap.Config.ARGB_8888);
+    private static class SendGestureTask extends AsyncTask<Void, Void, String> {
 
-        // Créer un canvas associé au Bitmap
-        Canvas canvas = new Canvas(screenshot);
-
-        // Dessiner la vue racine sur le canvas
-        rootView.draw(canvas);
-
-        return screenshot;
-    }
-
-    private class SendScreenDataTask extends AsyncTask<Bitmap, Void, Void> {
-        @SuppressLint("WrongThread")
         @Override
-        protected Void doInBackground(Bitmap... bitmaps) {
-            // Convertir l'image en chaîne Base64
-            Bitmap screenshot = bitmaps[0];
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            screenshot.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
-            byte[] byteArray = byteArrayOutputStream.toByteArray();
-            String encodedImage = Base64.encodeToString(byteArray, Base64.DEFAULT);
-
-            // Envoyer l'image encodée au serveur PHP
-            new SendImageDataTask().execute(encodedImage);
-
-            return null;
-        }
-    }
-
-    private class SendImageDataTask extends AsyncTask<String, Void, Void> {
-        @Override
-        protected Void doInBackground(String... params) {
-            // Envoyer l'image encodée au serveur PHP
-            String encodedImage = params[0];
-            // Assurez-vous d'ajuster l'URL du serveur PHP
-            String serverUrl = "http://407.projet3il.fr/index.php";
+        protected String doInBackground(Void... params) {
             try {
-                URL url = new URL(serverUrl);
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                connection.setRequestMethod("POST");
-                connection.setDoOutput(true);
+                // URL du serveur
+                String serverUrl = "http://adresse_ip_du_serveur:12345"; // Remplacez "adresse_ip_du_serveur" et 12345 par les détails du serveur
 
-                // Envoyer l'image encodée dans le corps de la requête
-                OutputStream outputStream = connection.getOutputStream();
-                outputStream.write(encodedImage.getBytes());
-                outputStream.flush();
-                outputStream.close();
+                // Capture du geste (vous devez adapter cette partie en fonction de votre logique de capture)
+                String gestureData = captureGeste();
 
-                connection.getResponseCode(); // Important pour déclencher la requête
-                connection.disconnect();
+                // Vérification si le geste a été capturé
+                if (gestureData != null && !gestureData.isEmpty()) {
+                    // Créer l'URL de connexion
+                    URL url = new URL(serverUrl);
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
+                    // Configurer la connexion pour une requête POST
+                    conn.setRequestMethod("POST");
+                    conn.setDoOutput(true);
+
+                    // Créer les données à envoyer
+                    String postData = "gestureData=" + gestureData;
+                    byte[] postDataBytes = postData.getBytes(StandardCharsets.UTF_8);
+
+                    // Écrire les données dans le flux de sortie
+                    try (DataOutputStream wr = new DataOutputStream(conn.getOutputStream())) {
+                        wr.write(postDataBytes);
+                    }
+
+                    // Récupérer la réponse du serveur (facultatif)
+                    // Vous pouvez ajouter cette partie selon vos besoins
+
+                    // Fermer la connexion
+                    conn.disconnect();
+
+                    // Retourner les données du geste à onPostExecute
+                    return gestureData;
+                } else {
+                    System.out.println("Aucun geste capturé.");
+                    return null;
+                }
             } catch (Exception e) {
-                Log.e("SendImageDataTask", "Erreur lors de l'envoi de l'image au serveur", e);
+                e.printStackTrace();
+                return null;
             }
-            return null;
+        }
+
+        // Méthode fictive de capture du geste, vous devez adapter cette méthode en fonction de votre logique de capture
+        private static String captureGeste() {
+            // ... Logique de capture du geste ...
+
+            // Supposons que vous ayez une chaîne de données de geste
+            return "DonneesDuGeste";
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            // Cette méthode est appelée après l'exécution de doInBackground
+            // Utilisez 'result' (données du geste) pour effectuer des opérations sur l'interface utilisateur si nécessaire
         }
     }
 }
