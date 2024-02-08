@@ -7,6 +7,8 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
@@ -22,11 +24,15 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.UUID;
 
 
 
 public class MainActivity extends AppCompatActivity {
+    private Timer timer;
+    private Handler handler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,11 +59,19 @@ public class MainActivity extends AppCompatActivity {
         buttonConnect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                // Initialisation du Timer et du Handler
+                timer = new Timer();
+                handler = new Handler(Looper.getMainLooper());
+
                 // Capture de l'écran (vous devez implémenter cette méthode selon vos besoins)
-                Bitmap screenshot = captureScreen();
+                //Bitmap screenshot = captureScreen();
 
                 // Envoyer la capture d'écran au serveur
-                new SendScreenDataTask().execute(screenshot);
+                //new SendScreenDataTask().execute(screenshot);
+
+                // Démarrez la capture d'écran périodique au démarrage de l'activité
+                startScreenCapture();
             }
         });
     }
@@ -122,5 +136,41 @@ public class MainActivity extends AppCompatActivity {
             }
             return null;
         }
+    }
+
+    // Méthode pour démarrer la capture d'écran périodique
+    private void startScreenCapture() {
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                // Capture de l'écran
+                captureAndSendScreen();
+            }
+        }, 0, 1500); // Capture toutes les 1 seconde, ajustez selon vos besoins
+    }
+
+    // Méthode pour arrêter la capture d'écran périodique
+    private void stopScreenCapture() {
+        timer.cancel();
+    }
+
+    private void captureAndSendScreen() {
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                // Capture de l'écran
+                Bitmap screenshot = captureScreen();
+
+                // Envoyer la capture d'écran au serveur
+                new SendScreenDataTask().execute(screenshot);
+            }
+        });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // Arrêtez la capture d'écran périodique lorsque l'activité est détruite
+        stopScreenCapture();
     }
 }

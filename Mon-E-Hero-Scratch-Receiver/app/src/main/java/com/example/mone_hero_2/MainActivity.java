@@ -9,6 +9,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -21,12 +23,16 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
 
     private ImageView imageViewReceived;
     private String imageUrl;
+    private Timer timer;
+    private Handler handler;
 
 
     TextView textViewReceivedData;
@@ -43,6 +49,9 @@ public class MainActivity extends AppCompatActivity {
 
         TextView textView = findViewById(R.id.textViewId); // Pour afficher l'id de l'appli
         textViewReceivedData = findViewById(R.id.textViewId1);
+
+        timer = new Timer();
+        handler = new Handler(Looper.getMainLooper());
 
         // Générer un identifiant unique (UUID)
         UUID uniqueId = UUID.randomUUID();
@@ -88,7 +97,10 @@ public class MainActivity extends AppCompatActivity {
                  */
                 //String message = editText.getText().toString().trim(); // Obtenez et nettoyez le texte
                 //new GetScreenDataTask().execute();
-                new DownloadImageTask().execute();
+                //new DownloadImageTask().execute();
+
+                // Démarrez le téléchargement d'image périodique au démarrage de l'activité
+                startImageDownload();
             }
         });
     }
@@ -126,5 +138,39 @@ public class MainActivity extends AppCompatActivity {
                 Log.e("DownloadImageTask", "Erreur lors du téléchargement de l'image 2");
             }
         }
+    }
+
+    // Méthode pour démarrer le téléchargement d'image périodique
+    private void startImageDownload() {
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                // Téléchargement de l'image depuis le serveur
+                downloadAndDisplayImage();
+            }
+        }, 0, 1500); // Télécharge toutes les 1 seconde, ajustez selon vos besoins
+    }
+
+    // Méthode pour arrêter le téléchargement d'image périodique
+    private void stopImageDownload() {
+        timer.cancel();
+    }
+
+    // Méthode pour télécharger et afficher l'image depuis le serveur
+    private void downloadAndDisplayImage() {
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                // Téléchargement de l'image depuis le serveur
+                new DownloadImageTask().execute();
+            }
+        });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // Arrêtez le téléchargement d'image périodique lorsque l'activité est détruite
+        stopImageDownload();
     }
 }
