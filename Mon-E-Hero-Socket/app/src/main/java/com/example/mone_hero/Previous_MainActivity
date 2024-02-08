@@ -1,0 +1,87 @@
+package com.example.mone_hero;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.content.Context;
+import android.content.SharedPreferences;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.UUID;
+
+
+
+public class MainActivity extends AppCompatActivity {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        Button buttonConnect = findViewById(R.id.buttonConnect);
+        final EditText editText = findViewById(R.id.editText); // Référence à votre EditText
+
+        TextView textView = findViewById(R.id.textViewId); // Pour afficher l'id de l'appli
+
+        // Générer un identifiant unique (UUID)
+        UUID uniqueId = UUID.randomUUID();
+        String uniqueIdString = uniqueId.toString();
+
+        // Stocker l'identifiant dans les préférences partagées
+        SharedPreferences preferences = getSharedPreferences("MonAppPrefs", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString("app_id", uniqueIdString);
+        editor.apply();
+
+        // Afficher l'ID généré dans le TextView
+        textView.setText("ID: " + uniqueIdString);
+        buttonConnect.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Récupérer les données d'écran (exemple : texte d'un TextView)
+                String screenData = textView.getText().toString();
+
+                // Envoyer les données d'écran au serveur PHP
+                new SendScreenDataTask().execute(screenData);
+            }
+        });
+    }
+    private class SendScreenDataTask extends AsyncTask<String, Void, Void> {
+        @Override
+        protected Void doInBackground(String... params) {
+            // Envoyer les données d'écran au serveur PHP
+            String screenData = params[0];
+            Log.d("MainActivity", "screenData: " + screenData);
+            // Utiliser une requête HTTP pour envoyer les données au serveur PHP
+            // Exemple : Utilisation de HttpURLConnection
+            // Assurez-vous d'ajuster l'URL du serveur PHP
+            String serverUrl = "http://407.projet3il.fr/index.php";
+            try {
+                URL url = new URL(serverUrl);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("POST");
+                connection.setDoOutput(true);
+                OutputStream outputStream = connection.getOutputStream();
+                outputStream.write(("data=" + screenData).getBytes("UTF-8"));
+                outputStream.flush();
+                outputStream.close();
+
+                int responseCode = connection.getResponseCode();
+                connection.disconnect();
+            } catch (Exception e) {
+                Log.e("SendScreenDataTask", "Erreur lors de l'envoi des données d'écran", e);
+            }
+            return null;
+        }
+    }
+}
