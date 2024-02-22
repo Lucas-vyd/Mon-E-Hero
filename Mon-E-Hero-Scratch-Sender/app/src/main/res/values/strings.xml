@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Mon E-Hero</string>
+    <item name="ic_notification_image" type="drawable">@drawable/ic_notification_image</item>
 </resources>
