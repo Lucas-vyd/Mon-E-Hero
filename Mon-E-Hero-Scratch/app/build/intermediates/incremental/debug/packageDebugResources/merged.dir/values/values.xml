@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="button">#727272</color>
+    <color name="fond">#003da5</color>
+    <color name="text">#FFFFFFFF</color>
+    <color name="white">#FFFFFFFF</color>
+    <string name="app_name">Mon E-Hero</string>
+    <style name="Base.Theme.MonEHero" parent="Theme.Material3.DayNight.NoActionBar">
+        
+        
+    </style>
+    <style name="Theme.MonEHero" parent="Base.Theme.MonEHero"/>
+</resources>
