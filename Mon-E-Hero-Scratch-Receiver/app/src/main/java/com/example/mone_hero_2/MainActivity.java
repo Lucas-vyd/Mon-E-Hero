@@ -12,9 +12,11 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.ImageView;
 
@@ -40,6 +42,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        View mainView = findViewById(android.R.id.content);
 
         imageViewReceived = findViewById(R.id.imageViewReceived);
         imageUrl = "http://407.projet3il.fr/index.php";
@@ -86,23 +90,44 @@ public class MainActivity extends AppCompatActivity {
         buttonConnect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                /*
-                String inputText = editText.getText().toString().trim(); // Obtenez et nettoyez le texte
+                // Pour afficher l'ImageView et masquer les autres vues
+                //ImageView imageView = findViewById(R.id.imageViewReceived);
+                LinearLayout otherViews = findViewById(R.id.otherViews);
 
-                if (inputText.isEmpty()) { // Vérifiez si le texte est vide
-                    Log.d("MainActivity", "texte vide");
-                } else {
-                    Log.d("MainActivity", inputText); // Affiche le texte dans la console
-                }
-                 */
-                //String message = editText.getText().toString().trim(); // Obtenez et nettoyez le texte
-                //new GetScreenDataTask().execute();
-                //new DownloadImageTask().execute();
+                imageViewReceived.setVisibility(View.VISIBLE);
+                otherViews.setVisibility(View.INVISIBLE);
+
+                // Pour afficher les autres vues et masquer l'ImageView
+                // imageViewReceived.setVisibility(View.INVISIBLE);
+                // otherViews.setVisibility(View.VISIBLE);
 
                 // Démarrez le téléchargement d'image périodique au démarrage de l'activité
                 startImageDownload();
             }
         });
+        mainView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                // Récupérez les coordonnées du clic
+                float x = event.getX();
+                float y = event.getY();
+
+                // Envoyez les coordonnées du clic à l'application émettrice
+                sendClickCoordinatesToEmitter(x, y);
+
+                // Retournez false pour indiquer que l'événement n'est pas consommé et doit être transmis à d'autres écouteurs
+                return false;
+            }
+        });
+    }
+
+    private void sendClickCoordinatesToEmitter(float x, float y) {
+        // Code pour envoyer les coordonnées à l'application émettrice via la connexion réseau
+        Log.d("sendClickCoordinatesToEmitter","x=" + x + " y=" + y);
+        //Log.d("sendClickCoordinatesToEmitter","Coordonée y"+y);
+        // Format des informations du clic
+        String clickInfo = "x=" + x + " y=" + y;
+        new SendClickCoordinatesToServerTask().execute(clickInfo);
     }
     private class DownloadImageTask extends AsyncTask<Void, Void, Bitmap> {
         @Override

