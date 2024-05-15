@@ -45,13 +45,6 @@ public class ScreenSharingActivity extends AppCompatActivity {
                         // Arrêter le service en premier plan lorsque l'activité est détruite
                         stopService(new Intent(this, MediaProjectionForegroundService.class));
 
-//                        int imageResId = getIntent().getIntExtra("imageResId", -1);
-//                        if (imageResId != -1) {
-//                            ImageView imageView = findViewById(imageResId);
-//                            // Faites quelque chose avec imageView
-//                            imageView.setVisibility(View.INVISIBLE);
-//
-//                        }
                     })
                     .addOnFailureListener(e -> {
                         Toast.makeText(ScreenSharingActivity.this, "Erreur lors de l'arrêt du partage", Toast.LENGTH_SHORT).show();

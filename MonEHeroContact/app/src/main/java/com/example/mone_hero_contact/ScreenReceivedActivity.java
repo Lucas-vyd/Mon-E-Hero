@@ -8,14 +8,17 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
 
 import java.io.InputStream;
 import java.util.Timer;
@@ -23,11 +26,13 @@ import java.util.TimerTask;
 
 public class ScreenReceivedActivity extends AppCompatActivity {
 
-    private ImageView imageViewReceived;
+    static ImageView imageViewReceived;
     private String imageUrl;
     private Timer timer;
     private Handler handler;
     private DocumentReference docRef;
+    private ListenerRegistration docListener;
+
 
 
     TextView textViewReceivedData;
@@ -35,10 +40,6 @@ public class ScreenReceivedActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_screenreceived);
-
-//        Intent intent = new Intent(this, ScreenSharingActivity.class);
-//        intent.putExtra("imageResId", R.id.imageViewReceived);
-//        startActivity(intent);
 
         imageViewReceived = findViewById(R.id.imageViewReceived);
         imageUrl = "http://407.projet3il.fr/index.php";
@@ -120,6 +121,28 @@ public class ScreenReceivedActivity extends AppCompatActivity {
         super.onDestroy();
         // Arrêtez le téléchargement d'image périodique lorsque l'activité est détruite
         stopImageDownload();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        docListener = docRef.addSnapshotListener((documentSnapshot, e) -> {
+            if (e != null) {
+                Toast.makeText(ScreenReceivedActivity.this, "Erreur lors de l'écoute du document", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (documentSnapshot != null && !documentSnapshot.exists()) {
+                if (ScreenReceivedActivity.imageViewReceived != null) {
+                    ImageView imageViewReceived = ScreenReceivedActivity.imageViewReceived;
+                    // Utiliser imageViewReceived comme nécessaire
+                    imageViewReceived.setVisibility(View.INVISIBLE);
+                }
+                Toast.makeText(ScreenReceivedActivity.this, "Le partage a été arrété.", Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        });
     }
 
 }

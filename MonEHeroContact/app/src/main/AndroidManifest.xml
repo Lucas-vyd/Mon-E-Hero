@@ -41,8 +41,8 @@
             android:exported="true">
         </activity>
         <activity android:name=".WaitingActivity" />
-        <activity android:name=".ScreenSharingActivity" />
         <activity android:name=".ScreenReceivedActivity" />
+        <activity android:name=".ScreenSharingActivity" />
 
         <service android:name=".MediaProjectionForegroundService"
             android:foregroundServiceType="mediaProjection"
